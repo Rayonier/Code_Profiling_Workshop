@@ -17,7 +17,7 @@ on:
 
 # A newer push to the same branch cancels the older run.
 concurrency:
-  group: callgrind-${{ github.ref_name }}
+  group: callgrind-${{ github.ref_name }}-${{ inputs.version || 'naive' }}
   cancel-in-progress: true
 
 env:
