@@ -331,10 +331,17 @@ In plain words:
 The unit is **Ir**, *instructions read* (executed). Two views matter:
 
 - **Inclusive** cost: the instructions in a function *plus everything it
-  calls*. `grow_plot` has almost 100% inclusive cost, because everything
-  happens inside it.
+  calls*. Everything happens inside `grow_plot`, so it sits at the top.
 - **Self** cost: the instructions in the function's own lines only. This is
   where the work actually happens.
+
+One wrinkle: callgrind lists costs per *file and function*. Code that the
+compiler inlined from a header is listed under that header, even though it
+runs inside `grow_plot`. So `grow_plot` appears more than once: once under
+`grow.cpp`, and again under Rcpp's `traits.h`, which is where
+`NumericVector`'s bounds-checked `x[i]` lives. Rows that start with `???`
+are machine code that callgrind couldn't name because it has no symbol
+information. You can skip them for this exercise.
 
 ```{r callgrind-helpers, include=FALSE}
 annot_path <- function(version, kind = c("inclusive", "source")) {
@@ -353,8 +360,12 @@ total_ir <- function(version) {
 
 ```{r callgrind-top, echo=FALSE, results='asis'}
 if (has_results) {
-  cat("Top of the inclusive report for the naive version:\n\n```\n")
-  cat(head(readLines(annot_path("naive")), 40), sep = "\n")
+  cat("Top of the inclusive report for the naive version",
+      "(long C++ type names shortened, lines cut at 110 characters):\n\n```\n")
+  rpt <- head(readLines(annot_path("naive")), 40)
+  rpt <- gsub("Rcpp::Vector<14, Rcpp::PreserveStorage>", "NumericVector", rpt, fixed = TRUE)
+  rpt <- gsub("/home/runner/work/_temp/Library/", "", rpt, fixed = TRUE)
+  cat(substr(rpt, 1, 110), sep = "\n")
   cat("\n```\n")
 } else {
   cat("> **Results pending.** This page was built before the first callgrind run,",
@@ -371,6 +382,7 @@ if (has_results) {
   src <- readLines(annot_path("naive", "source"))
   hit <- grep("plot basal area in larger trees", src, fixed = TRUE)
   if (length(hit)) {
+    src <- gsub("/home/runner/work/_temp/Library/", "", src, fixed = TRUE)
     cat("```\n"); cat(src[max(1, hit[1] - 6):min(length(src), hit[1] + 14)], sep = "\n"); cat("\n```\n")
   } else {
     cat("> Open `results/annotate_naive.txt` and search for `grow.cpp`.\n")
