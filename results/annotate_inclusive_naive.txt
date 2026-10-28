@@ -1,0 +1,728 @@
+--------------------------------------------------------------------------------
+Profile data file 'callgrind.out.naive' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 306253311
+Trigger: Program termination
+Profiled target:  /opt/R/4.6.1/lib/R/bin/exec/R --vanilla -f ci/profile_cpp.R (PID 6223, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                     
+--------------------------------------------------------------------------------
+1,789,599,398 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                      file:function
+--------------------------------------------------------------------------------
+1,163,152,394 (65.00%)  src/grow.cpp:grow_plot(Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, double, double, int, double, double)'2 [src/sourceCpp_2.so]
+  591,021,724 (33.03%)  /home/runner/work/_temp/Library/Rcpp/include/Rcpp/vector/traits.h:grow_plot(Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, double, double, int, double, double)'2
+  220,922,856 (12.34%)  ???:0x000000002d5280b0 [???]
+  217,575,540 (12.16%)  ./math/./w_pow_template.c:pow@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  180,755,064 (10.10%)  ???:0x0000000004f49370 [???]
+  177,407,748 ( 9.91%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   71,728,200 ( 4.01%)  ???:0x000000002d5280f0 [???]
+   69,337,260 ( 3.87%)  ./math/./w_exp_template.c:exp@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   48,368,023 ( 2.70%)  src/grow.cpp:order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&) [src/sourceCpp_2.so]
+   46,417,352 ( 2.59%)  /usr/include/c++/13/bits/stl_algo.h:order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)
+   46,397,752 ( 2.59%)  /usr/include/c++/13/bits/stl_algo.h:void std::__stable_sort_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) [src/sourceCpp_2.so]
+   45,427,860 ( 2.54%)  ???:0x0000000004f49400 [???]
+   43,036,920 ( 2.40%)  ./math/../sysdeps/ieee754/dbl-64/e_exp.c:__ieee754_exp_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   40,444,472 ( 2.26%)  /usr/include/c++/13/bits/stl_algo.h:void std::__merge_sort_with_buffer<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) [src/sourceCpp_2.so]
+   40,167,792 ( 2.24%)  ???:0x000000002d527cb0 [???]
+   38,733,228 ( 2.16%)  ./math/./w_log_template.c:log@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   35,146,818 ( 1.96%)  ???:0x0000000004f49340 [???]
+   33,712,254 ( 1.88%)  ./math/../sysdeps/ieee754/dbl-64/e_log.c:__ieee754_log_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   17,116,320 ( 0.96%)  /usr/include/c++/13/bits/stl_algobase.h:grow_plot(Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, Rcpp::Vector<14, Rcpp::PreserveStorage>, double, double, int, double, double)'2
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/include/c++/13/bits/stl_algobase.h
+--------------------------------------------------------------------------------
+Ir                 
+
+-- line 230 ----------------------------------------
+        .             template<typename _Tp>
+        .               _GLIBCXX14_CONSTEXPR
+        .               inline const _Tp&
+        .               min(const _Tp& __a, const _Tp& __b)
+        .               {
+        .                 // concept requirements
+        .                 __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
+        .                 //return __b < __a ? __b : __a;
+  277,328 ( 0.02%)        if (__b < __a)
+3,347,316 ( 0.19%)  	return __b;
+   78,000 ( 0.00%)  => ???:0x000000002d527b90 (1,500x)
+        .                 return __a;
+        .               }
+        .           
+        .             /**
+        .              *  @brief This does what you think it does.
+        .              *  @ingroup sorting_algorithms
+        .              *  @param  __a  A thing of arbitrary type.
+        .              *  @param  __b  Another thing of arbitrary type.
+-- line 247 ----------------------------------------
+-- line 254 ----------------------------------------
+        .             template<typename _Tp>
+        .               _GLIBCXX14_CONSTEXPR
+        .               inline const _Tp&
+        .               max(const _Tp& __a, const _Tp& __b)
+        .               {
+        .                 // concept requirements
+        .                 __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
+        .                 //return  __a < __b ? __b : __a;
+  487,788 ( 0.03%)        if (__a < __b)
+  717,282 ( 0.04%)  	return __b;
+        .                 return __a;
+        .               }
+        .           
+        .             /**
+        .              *  @brief This does what you think it does.
+        .              *  @ingroup sorting_algorithms
+        .              *  @param  __a  A thing of arbitrary type.
+        .              *  @param  __b  Another thing of arbitrary type.
+-- line 271 ----------------------------------------
+-- line 415 ----------------------------------------
+        .           	      ++__result;
+        .           	    }
+        .           	  return __result;
+        .           	}
+        .           
+        .                 template<typename _Tp, typename _Up>
+        .           	static void
+        .           	__assign_one(_Tp* __to, _Up* __from)
+  141,097 ( 0.01%)  	{ *__to = std::move(*__from); }
+        .               };
+        .           #endif
+        .           
+        .             template<bool _IsMove>
+        .               struct __copy_move<_IsMove, true, random_access_iterator_tag>
+        .               {
+        .                 template<typename _Tp, typename _Up>
+        .           	_GLIBCXX20_CONSTEXPR
+        .           	static _Up*
+        .           	__copy_m(_Tp* __first, _Tp* __last, _Up* __result)
+        .           	{
+  121,087 ( 0.01%)  	  const ptrdiff_t _Num = __last - __first;
+  154,188 ( 0.01%)  	  if (__builtin_expect(_Num > 1, true))
+  118,791 ( 0.01%)  	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
+  171,911 ( 0.01%)  => ???:0x000000002d528000 (9,089x)
+   51,592 ( 0.00%)  	  else if (_Num == 1)
+        .           	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
+        .           	      __assign_one(__result, __first);
+   89,068 ( 0.00%)  	  return __result + _Num;
+        .           	}
+        .               };
+        .           
+        .           _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+        .           
+        .             template<typename _Tp, typename _Ref, typename _Ptr>
+        .               struct _Deque_iterator;
+        .           
+-- line 449 ----------------------------------------
+-- line 738 ----------------------------------------
+        .             template<bool _IsMove>
+        .               struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
+        .               {
+        .                 template<typename _Tp, typename _Up>
+        .           	_GLIBCXX20_CONSTEXPR
+        .           	static _Up*
+        .           	__copy_move_b(_Tp* __first, _Tp* __last, _Up* __result)
+        .           	{
+  190,269 ( 0.01%)  	  const ptrdiff_t _Num = __last - __first;
+  127,338 ( 0.01%)  	  if (__builtin_expect(_Num > 1, true))
+  172,675 ( 0.01%)  	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
+  603,628 ( 0.03%)  => ???:0x000000002d528000 (42,852x)
+   20,660 ( 0.00%)  	  else if (_Num == 1)
+        .           	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
+        .           	      __assign_one(__result - 1, __first);
+        .           	  return __result - _Num;
+        .           	}
+        .               };
+        .           
+        .             template<bool _IsMove, typename _BI1, typename _BI2>
+        .               _GLIBCXX20_CONSTEXPR
+-- line 757 ----------------------------------------
+-- line 922 ----------------------------------------
+        .             template<typename _ForwardIterator, typename _Tp>
+        .               _GLIBCXX20_CONSTEXPR
+        .               inline typename
+        .               __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, void>::__type
+        .               __fill_a1(_ForwardIterator __first, _ForwardIterator __last,
+        .           	      const _Tp& __value)
+        .               {
+        .                 const _Tp __tmp = __value;
+    2,800 ( 0.00%)        for (; __first != __last; ++__first)
+    5,600 ( 0.00%)  	*__first = __tmp;
+   89,852 ( 0.01%)  => ???:0x000000002d527b40 (1,400x)
+        .               }
+        .           
+        .             // Specialization: for char types we can use memset.
+        .             template<typename _Tp>
+        .               _GLIBCXX20_CONSTEXPR
+        .               inline typename
+        .               __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, void>::__type
+        .               __fill_a1(_Tp* __first, _Tp* __last, const _Tp& __c)
+-- line 939 ----------------------------------------
+-- line 1115 ----------------------------------------
+        .               _GLIBCXX20_CONSTEXPR
+        .               inline _OutputIterator
+        .               __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
+        .           	       std::random_access_iterator_tag)
+        .               {
+        .           #if __cplusplus >= 201103L
+        .                 static_assert(is_integral<_Size>{}, "fill_n must pass integral size");
+        .           #endif
+    2,800 ( 0.00%)        if (__n <= 0)
+        .           	return __first;
+        .           
+        .                 __glibcxx_requires_can_increment(__first, __n);
+        .           
+        .                 std::__fill_a(__first, __first + __n, __value);
+        .                 return __first + __n;
+        .               }
+        .           
+-- line 1131 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/include/c++/13/bits/stl_algo.h
+--------------------------------------------------------------------------------
+Ir                 
+
+-- line 1791 ----------------------------------------
+        .               void
+        .               __unguarded_linear_insert(_RandomAccessIterator __last,
+        .           			      _Compare __comp)
+        .               {
+        .                 typename iterator_traits<_RandomAccessIterator>::value_type
+        .           	__val = _GLIBCXX_MOVE(*__last);
+        .                 _RandomAccessIterator __next = __last;
+        .                 --__next;
+1,236,783 ( 0.07%)        while (__comp(__val, __next))
+        .           	{
+  475,080 ( 0.03%)  	  *__last = _GLIBCXX_MOVE(*__next);
+        .           	  __last = __next;
+        .           	  --__next;
+        .           	}
+  349,442 ( 0.02%)        *__last = _GLIBCXX_MOVE(__val);
+        .               }
+        .           
+        .             /// This is a helper function for the sort routine.
+        .             template<typename _RandomAccessIterator, typename _Compare>
+        .               _GLIBCXX20_CONSTEXPR
+        .               void
+  495,684 ( 0.03%)      __insertion_sort(_RandomAccessIterator __first,
+        .           		     _RandomAccessIterator __last, _Compare __comp)
+        .               {
+   82,614 ( 0.00%)        if (__first == __last) return;
+        .           
+  796,166 ( 0.04%)        for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+        .           	{
+  476,042 ( 0.03%)  	  if (__comp(__i, __first))
+        .           	    {
+        .           	      typename iterator_traits<_RandomAccessIterator>::value_type
+  476,042 ( 0.03%)  		__val = _GLIBCXX_MOVE(*__i);
+        .           	      _GLIBCXX_MOVE_BACKWARD3(__first, __i, __i + 1);
+  189,900 ( 0.01%)  	      *__first = _GLIBCXX_MOVE(__val);
+        .           	    }
+        .           	  else
+        .           	    std::__unguarded_linear_insert(__i,
+        .           				__gnu_cxx::__ops::__val_comp_iter(__comp));
+        .           	}
+  454,377 ( 0.03%)      }
+        .           
+        .             /// This is a helper function for the sort routine.
+        .             template<typename _RandomAccessIterator, typename _Compare>
+        .               _GLIBCXX20_CONSTEXPR
+        .               inline void
+        .               __unguarded_insertion_sort(_RandomAccessIterator __first,
+        .           			       _RandomAccessIterator __last, _Compare __comp)
+        .               {
+-- line 1838 ----------------------------------------
+-- line 2290 ----------------------------------------
+        .             /// This is a helper function for the __merge_adaptive routines.
+        .             template<typename _InputIterator1, typename _InputIterator2,
+        .           	   typename _OutputIterator, typename _Compare>
+        .               void
+        .               __move_merge_adaptive(_InputIterator1 __first1, _InputIterator1 __last1,
+        .           			  _InputIterator2 __first2, _InputIterator2 __last2,
+        .           			  _OutputIterator __result, _Compare __comp)
+        .               {
+  531,924 ( 0.03%)        while (__first1 != __last1 && __first2 != __last2)
+        .           	{
+  264,962 ( 0.01%)  	  if (__comp(__first2, __first1))
+        .           	    {
+   66,284 ( 0.00%)  	      *__result = _GLIBCXX_MOVE(*__first2);
+        .           	      ++__first2;
+        .           	    }
+        .           	  else
+        .           	    {
+   66,197 ( 0.00%)  	      *__result = _GLIBCXX_MOVE(*__first1);
+   66,197 ( 0.00%)  	      ++__first1;
+        .           	    }
+        .           	  ++__result;
+        .           	}
+      670 ( 0.00%)        if (__first1 != __last1)
+        .           	_GLIBCXX_MOVE3(__first1, __last1, __result);
+        .               }
+        .           
+        .             /// This is a helper function for the __merge_adaptive routines.
+        .             template<typename _BidirectionalIterator1, typename _BidirectionalIterator2,
+        .           	   typename _BidirectionalIterator3, typename _Compare>
+        .               void
+        .               __move_merge_adaptive_backward(_BidirectionalIterator1 __first1,
+        .           				   _BidirectionalIterator1 __last1,
+        .           				   _BidirectionalIterator2 __first2,
+        .           				   _BidirectionalIterator2 __last2,
+        .           				   _BidirectionalIterator3 __result,
+        .           				   _Compare __comp)
+        .               {
+    1,470 ( 0.00%)        if (__first1 == __last1)
+        .           	{
+        .           	  _GLIBCXX_MOVE_BACKWARD3(__first2, __last2, __result);
+        .           	  return;
+        .           	}
+    1,470 ( 0.00%)        else if (__first2 == __last2)
+        .           	return;
+        .           
+        .                 --__last1;
+    1,470 ( 0.00%)        --__last2;
+        .                 while (true)
+        .           	{
+  287,604 ( 0.02%)  	  if (__comp(__last2, __last1))
+        .           	    {
+  144,420 ( 0.01%)  	      *--__result = _GLIBCXX_MOVE(*__last1);
+  144,420 ( 0.01%)  	      if (__first1 == __last1)
+        .           		{
+      369 ( 0.00%)  		  _GLIBCXX_MOVE_BACKWARD3(__first2, ++__last2, __result);
+        .           		  return;
+        .           		}
+        .           	      --__last1;
+        .           	    }
+        .           	  else
+        .           	    {
+  143,184 ( 0.01%)  	      *--__result = _GLIBCXX_MOVE(*__last2);
+  143,184 ( 0.01%)  	      if (__first2 == __last2)
+        .           		return;
+  142,452 ( 0.01%)  	      --__last2;
+        .           	    }
+        .           	}
+        .               }
+        .           
+        .             /// This is a helper function for the merge routines.
+        .             template<typename _BidirectionalIterator1, typename _BidirectionalIterator2,
+        .           	   typename _Distance>
+        .               _BidirectionalIterator1
+-- line 2362 ----------------------------------------
+-- line 2393 ----------------------------------------
+        .                 else
+        .           	return std::rotate(__first, __middle, __last);
+        .               }
+        .           
+        .             /// This is a helper function for the merge routines.
+        .             template<typename _BidirectionalIterator, typename _Distance,
+        .           	   typename _Pointer, typename _Compare>
+        .               void
+  162,667 ( 0.01%)      __merge_adaptive(_BidirectionalIterator __first,
+        .           		     _BidirectionalIterator __middle,
+        .           		     _BidirectionalIterator __last,
+        .           		     _Distance __len1, _Distance __len2,
+        .           		     _Pointer __buffer, _Compare __comp)
+        .               {
+    2,800 ( 0.00%)        if (__len1 <= __len2)
+        .           	{
+        .           	  _Pointer __buffer_end = _GLIBCXX_MOVE3(__first, __middle, __buffer);
+        .           	  std::__move_merge_adaptive(__buffer, __buffer_end, __middle, __last,
+        .           				     __first, __comp);
+        .           	}
+        .                 else
+        .           	{
+        .           	  _Pointer __buffer_end = _GLIBCXX_MOVE3(__middle, __last, __buffer);
+        .           	  std::__move_merge_adaptive_backward(__first, __middle, __buffer,
+        .           					      __buffer_end, __last, __comp);
+        .           	}
+   14,267 ( 0.00%)      }
+        .           
+        .             template<typename _BidirectionalIterator, typename _Distance,
+        .           	   typename _Pointer, typename _Compare>
+        .               void
+        .               __merge_adaptive_resize(_BidirectionalIterator __first,
+        .           			    _BidirectionalIterator __middle,
+        .           			    _BidirectionalIterator __last,
+        .           			    _Distance __len1, _Distance __len2,
+-- line 2427 ----------------------------------------
+-- line 2641 ----------------------------------------
+        .           			   __gnu_cxx::__ops::__iter_comp_iter(__comp));
+        .               }
+        .           
+        .           
+        .             /// This is a helper function for the __merge_sort_loop routines.
+        .             template<typename _InputIterator, typename _OutputIterator,
+        .           	   typename _Compare>
+        .               _OutputIterator
+  685,769 ( 0.04%)      __move_merge(_InputIterator __first1, _InputIterator __last1,
+        .           		 _InputIterator __first2, _InputIterator __last2,
+        .           		 _OutputIterator __result, _Compare __comp)
+        .               {
+4,421,273 ( 0.25%)        while (__first1 != __last1 && __first2 != __last2)
+        .           	{
+2,140,948 ( 0.12%)  	  if (__comp(__first2, __first1))
+        .           	    {
+  474,117 ( 0.03%)  	      *__result = _GLIBCXX_MOVE(*__first2);
+  473,660 ( 0.03%)  	      ++__first2;
+        .           	    }
+        .           	  else
+        .           	    {
+  596,357 ( 0.03%)  	      *__result = _GLIBCXX_MOVE(*__first1);
+  279,201 ( 0.02%)  	      ++__first1;
+        .           	    }
+  871,599 ( 0.05%)  	  ++__result;
+        .           	}
+        .                 return _GLIBCXX_MOVE3(__first2, __last2,
+        .           			    _GLIBCXX_MOVE3(__first1, __last1,
+        .           					   __result));
+  482,174 ( 0.03%)      }
+        .           
+        .             template<typename _RandomAccessIterator1, typename _RandomAccessIterator2,
+        .           	   typename _Distance, typename _Compare>
+        .               void
+        .               __merge_sort_loop(_RandomAccessIterator1 __first,
+        .           		      _RandomAccessIterator1 __last,
+        .           		      _RandomAccessIterator2 __result, _Distance __step_size,
+        .           		      _Compare __comp)
+        .               {
+   12,488 ( 0.00%)        const _Distance __two_step = 2 * __step_size;
+        .           
+  134,393 ( 0.01%)        while (__last - __first >= __two_step)
+        .           	{
+  175,392 ( 0.01%)  	  __result = std::__move_merge(__first, __first + __step_size,
+10,247,223 ( 0.57%)  => /usr/include/c++/13/bits/stl_algo.h:int* std::__move_merge<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (22,015x)
+6,827,625 ( 0.38%)  => /usr/include/c++/13/bits/stl_algo.h:__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > std::__move_merge<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(int*, int*, int*, int*, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (9,331x)
+   44,401 ( 0.00%)  				       __first + __step_size,
+    3,507 ( 0.00%)  				       __first + __two_step,
+        .           				       __result, __comp);
+        .           	  __first += __two_step;
+        .           	}
+        .                 __step_size = std::min(_Distance(__last - __first), __step_size);
+        .           
+   77,665 ( 0.00%)        std::__move_merge(__first, __first + __step_size,
+3,383,409 ( 0.19%)  => /usr/include/c++/13/bits/stl_algo.h:int* std::__move_merge<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (6,244x)
+4,854,021 ( 0.27%)  => /usr/include/c++/13/bits/stl_algo.h:__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > std::__move_merge<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(int*, int*, int*, int*, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (6,244x)
+        .           			__first + __step_size, __last, __result, __comp);
+        .               }
+        .           
+        .             template<typename _RandomAccessIterator, typename _Distance,
+        .           	   typename _Compare>
+        .               _GLIBCXX20_CONSTEXPR
+        .               void
+        .               __chunk_insertion_sort(_RandomAccessIterator __first,
+        .           			   _RandomAccessIterator __last,
+        .           			   _Distance __chunk_size, _Compare __comp)
+        .               {
+   88,214 ( 0.00%)        while (__last - __first >= __chunk_size)
+        .           	{
+  115,521 ( 0.01%)  	  std::__insertion_sort(__first, __first + __chunk_size, __comp);
+13,576,527 ( 0.76%)  => /usr/include/c++/13/bits/stl_algo.h:void std::__insertion_sort<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (38,507x)
+        .           	  __first += __chunk_size;
+        .           	}
+   11,200 ( 0.00%)        std::__insertion_sort(__first, __last, __comp);
+  408,969 ( 0.02%)  => /usr/include/c++/13/bits/stl_algo.h:void std::__insertion_sort<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (2,800x)
+        .               }
+        .           
+        .             enum { _S_chunk_size = 7 };
+        .           
+        .             template<typename _RandomAccessIterator, typename _Pointer, typename _Compare>
+        .               void
+   30,800 ( 0.00%)      __merge_sort_with_buffer(_RandomAccessIterator __first,
+        .           			     _RandomAccessIterator __last,
+        .           			     _Pointer __buffer, _Compare __comp)
+        .               {
+        .                 typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+        .           	_Distance;
+        .           
+        .                 const _Distance __len = __last - __first;
+    5,600 ( 0.00%)        const _Pointer __buffer_last = __buffer + __len;
+        .           
+    8,400 ( 0.00%)        _Distance __step_size = _S_chunk_size;
+        .                 std::__chunk_insertion_sort(__first, __last, __step_size, __comp);
+        .           
+   12,614 ( 0.00%)        while (__step_size < __len)
+        .           	{
+        .           	  std::__merge_sort_loop(__first, __last, __buffer,
+        .           				 __step_size, __comp);
+        .           	  __step_size *= 2;
+        .           	  std::__merge_sort_loop(__buffer, __buffer_last, __first,
+        .           				 __step_size, __comp);
+        .           	  __step_size *= 2;
+        .           	}
+   19,663 ( 0.00%)      }
+        .           
+        .             template<typename _RandomAccessIterator, typename _Pointer, typename _Compare>
+        .               void
+   14,000 ( 0.00%)      __stable_sort_adaptive(_RandomAccessIterator __first,
+        .           			   _RandomAccessIterator __middle,
+        .           			   _RandomAccessIterator __last,
+        .           			   _Pointer __buffer, _Compare __comp)
+        .               {
+    4,200 ( 0.00%)        std::__merge_sort_with_buffer(__first, __middle, __buffer, __comp);
+20,292,491 ( 1.13%)  => /usr/include/c++/13/bits/stl_algo.h:void std::__merge_sort_with_buffer<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (1,400x)
+    7,000 ( 0.00%)        std::__merge_sort_with_buffer(__middle, __last, __buffer, __comp);
+20,151,981 ( 1.13%)  => /usr/include/c++/13/bits/stl_algo.h:void std::__merge_sort_with_buffer<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (1,400x)
+        .           
+   11,200 ( 0.00%)        std::__merge_adaptive(__first, __middle, __last,
+5,898,680 ( 0.33%)  => /usr/include/c++/13/bits/stl_algo.h:void std::__merge_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, long, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, long, long, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (1,400x)
+        .           			    __middle - __first, __last - __middle,
+        .           			    __buffer, __comp);
+   11,200 ( 0.00%)      }
+        .           
+        .             template<typename _RandomAccessIterator, typename _Pointer,
+        .           	   typename _Distance, typename _Compare>
+        .               void
+        .               __stable_sort_adaptive_resize(_RandomAccessIterator __first,
+        .           				  _RandomAccessIterator __last,
+        .           				  _Pointer __buffer, _Distance __buffer_size,
+        .           				  _Compare __comp)
+-- line 2761 ----------------------------------------
+-- line 5030 ----------------------------------------
+        .           
+        .                 if (__first == __last)
+        .           	return;
+        .           
+        .           #if _GLIBCXX_HOSTED
+        .                 typedef _Temporary_buffer<_RandomAccessIterator, _ValueType> _TmpBuf;
+        .                 // __stable_sort_adaptive sorts the range in two halves,
+        .                 // so the buffer only needs to fit half the range at once.
+    8,400 ( 0.00%)        _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+        .           
+    2,800 ( 0.00%)        if (__builtin_expect(__buf.requested_size() == __buf.size(), true))
+    8,400 ( 0.00%)  	std::__stable_sort_adaptive(__first,
+46,397,752 ( 2.59%)  => /usr/include/c++/13/bits/stl_algo.h:void std::__stable_sort_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}> >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int*, __gnu_cxx::__ops::_Iter_comp_iter<order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&)::{lambda(int, int)#1}>) (1,400x)
+        .           				    __first + _DistanceType(__buf.size()),
+        .           				    __last, __buf.begin(), __comp);
+        .                 else if (__builtin_expect(__buf.begin() == 0, false))
+        .           	std::__inplace_stable_sort(__first, __last, __comp);
+        .                 else
+        .           	std::__stable_sort_adaptive_resize(__first, __last, __buf.begin(),
+        .           					   _DistanceType(__buf.size()), __comp);
+        .           #else
+-- line 5049 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/grow.cpp
+--------------------------------------------------------------------------------
+Ir                   
+
+-- line 17 ----------------------------------------
+          .           #else
+          .           #define CALLGRIND_START_INSTRUMENTATION
+          .           #define CALLGRIND_STOP_INSTRUMENTATION
+          .           #endif
+          .           
+          .           using namespace Rcpp;
+          .           
+          .           // Tree order by DBH, largest first (ties keep input order).
+     12,600 ( 0.00%)  static std::vector<int> order_by_dbh(const NumericVector& dbh) {
+          .             std::vector<int> ord(dbh.size());
+          .             std::iota(ord.begin(), ord.end(), 0);
+          .             std::stable_sort(ord.begin(), ord.end(),
+  4,136,260 ( 0.23%)                     [&](int a, int b) { return dbh[a] > dbh[b]; });
+          .             return ord;
+     12,600 ( 0.00%)  }
+          .           
+          .           // FVS top height (AVH): mean height of the largest trees making up 40 TPA.
+          .           static double top_height(const NumericVector& dbh, const NumericVector& ht,
+          .                                    const NumericVector& tpa) {
+      7,000 ( 0.00%)    std::vector<int> ord = order_by_dbh(dbh);
+    331,846 ( 0.02%)  => src/grow.cpp:order_by_dbh(Rcpp::Vector<14, Rcpp::PreserveStorage> const&) (7x)
+      2,800 ( 0.00%)    double sum_tpa = 0.0, sum_ht = 0.0;
+     88,396 ( 0.00%)    for (int i : ord) {
+    112,245 ( 0.01%)      double p = tpa[i];
+    137,494 ( 0.01%)      if (sum_tpa + p > lp::TOP_TPA) p = lp::TOP_TPA - sum_tpa;
+      2,800 ( 0.00%)      sum_tpa += p;
+    112,245 ( 0.01%)      sum_ht += ht[i] * p;
+     67,347 ( 0.00%)      if (sum_tpa >= lp::TOP_TPA) break;
+          .             }
+      4,200 ( 0.00%)    return sum_tpa > 0.0 ? sum_ht / sum_tpa : 0.0;
+          .           }
+          .           
+          .           // {4.7.1.1} 5-year diameter growth (outside bark, inches).
+          .           static double diameter_growth(double dbh, double ht, double cr, double avh,
+          .                                         double si, double ba, double pbal,
+          .                                         double slope, double aspect) {
+  1,673,658 ( 0.09%)    double relht = avh > 0.0 ? std::min(ht / avh, lp::RELHT_MAX) : 0.0;
+  3,825,504 ( 0.21%)    double ln_dds = lp::B1 + lp::B2 * std::log(dbh) + lp::B3 * dbh * dbh +
+     84,000 ( 0.00%)  => ???:0x000000002d527cb0 (1,500x)
+  2,390,940 ( 0.13%)                    lp::B4 * std::log(cr) + lp::B5 * relht + lp::B6 * si +
+     84,000 ( 0.00%)  => ???:0x000000002d527cb0 (1,500x)
+  2,390,940 ( 0.13%)                    lp::B7 * ba + lp::B8 * pbal + lp::B9 * slope +
+    956,376 ( 0.05%)                    lp::B10 * std::cos(aspect) * slope +
+  1,195,470 ( 0.07%)                    lp::B11 * std::sin(aspect) * slope +
+    239,094 ( 0.01%)                    lp::FORTYPE + lp::ECOUNIT + lp::PLANT;
+          .             ln_dds = std::max(ln_dds, lp::LN_DDS_MIN);
+          .             double bratio = lp::bark_ratio(dbh);
+    717,282 ( 0.04%)    double dib = dbh * bratio;                       // inside-bark diameter
+  2,869,128 ( 0.16%)    return (std::sqrt(dib * dib + std::exp(ln_dds)) - dib) / bratio;
+     90,000 ( 0.01%)  => ???:0x000000002d5280f0 (1,500x)
+          .           }
+          .           
+          .           // {4.6.1.1} and {4.7.2.1}-{4.7.2.7} 5-year height growth (feet).
+          .           static double height_growth(double ht, double cr, double avh, double si) {
+  1,195,470 ( 0.07%)    double htmax = lp::C1 * std::pow(si, lp::C2);
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+          .             double potential = 0.0;
+  1,195,470 ( 0.07%)    if (htmax - ht > 1.0) {
+  1,195,470 ( 0.07%)      double shape = lp::C4 * std::pow(si, lp::C5);
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+  3,347,316 ( 0.19%)      double aget = std::log(1.0 - std::pow(ht / htmax, 1.0 / shape)) / lp::C3;
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+     84,000 ( 0.00%)  => ???:0x000000002d527cb0 (1,500x)
+  2,630,034 ( 0.15%)      double ht5 = htmax * std::pow(1.0 - std::exp(lp::C3 * (aget + lp::CYCLE)), shape);
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+     90,000 ( 0.01%)  => ???:0x000000002d5280f0 (1,500x)
+    717,282 ( 0.04%)      potential = ht5 - ht;
+          .             }
+    478,188 ( 0.03%)    double crp = cr / 100.0;
+  2,390,940 ( 0.13%)    double hgmdcr = std::min(100.0 * crp * crp * crp * std::exp(-5.0 * crp), 1.0);
+     90,000 ( 0.01%)  => ???:0x000000002d5280f0 (1,500x)
+  1,434,564 ( 0.08%)    double relht = avh > 0.0 ? std::min(ht / avh, lp::RELHT_MAX) : 0.0;
+          .             double fctrkx = std::pow(lp::RHK / lp::RHYXS, lp::RHM - 1.0) - 1.0;
+          .             double fctrrb = -lp::RHR / (1.0 - lp::RHB);
+    717,282 ( 0.04%)    double fctrxb = std::pow(relht, 1.0 - lp::RHB) - std::pow(lp::RHXS, 1.0 - lp::RHB);
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+          .             double fctrm = 1.0 / (1.0 - lp::RHM);
+  1,434,564 ( 0.08%)    double hgmdrh = lp::RHK * std::pow(1.0 + fctrkx * std::exp(fctrrb * fctrxb), fctrm);
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+     90,000 ( 0.01%)  => ???:0x000000002d5280f0 (1,500x)
+  1,434,564 ( 0.08%)    double htg = potential * (lp::WTCR * hgmdcr + (1.0 - lp::WTCR) * hgmdrh);
+          .             return std::max(htg, lp::HTG_MIN);
+          .           }
+          .           
+          .           // {5.0.1}-{5.0.2} background mortality rate over one cycle.
+          .           static double mortality_rate(double dbh) {
+  1,912,752 ( 0.11%)    double ri = 1.0 / (1.0 + std::exp(lp::P0 + lp::P1 * dbh));
+     90,000 ( 0.01%)  => ???:0x000000002d5280f0 (1,500x)
+  1,673,658 ( 0.09%)    return 1.0 - std::pow(1.0 - ri, lp::CYCLE);
+    198,000 ( 0.01%)  => ???:0x000000002d5280b0 (1,500x)
+          .           }
+          .           
+          .           //' Project one plot's tree list forward in 5-year cycles.
+          .           //' Returns one row per cycle (including the start): Year, Age, TPA, BA, QMD, HD.
+          .           // [[Rcpp::export]]
+          .           DataFrame grow_plot(NumericVector dbh, NumericVector ht, NumericVector cr,
+          .                               NumericVector tpa, double age, double si, int years,
+          .                               double slope = 0.05, double aspect = 0.0) {
+          .             int n = dbh.size();
+          .             int ncycles = years / static_cast<int>(lp::CYCLE);
+          .             dbh = clone(dbh); ht = clone(ht); tpa = clone(tpa);    // don't modify the caller's data
+          .           
+          .             std::vector<double> out_year, out_age, out_tpa, out_ba, out_qmd, out_hd;
+          .           
+        400 ( 0.00%)    CALLGRIND_START_INSTRUMENTATION;
+      6,000 ( 0.00%)    for (int cycle = 0; cycle <= ncycles; ++cycle) {
+          .               // keep this cycle's starting state; every tree grows from the same snapshot
+     15,400 ( 0.00%)      NumericVector dbh0 = clone(dbh), ht0 = clone(ht), tpa0 = clone(tpa);
+     28,255 ( 0.00%)  => ???:0x000000002d527f30 (21x)
+          .           
+      2,800 ( 0.00%)      double ba = 0.0, trees = 0.0;
+  1,121,372 ( 0.06%)      for (int i = 0; i < n; ++i) {
+  4,184,145 ( 0.23%)        ba += lp::BA_FACTOR * dbh0[i] * dbh0[i] * tpa0[i];
+    557,886 ( 0.03%)        trees += tpa0[i];
+          .               }
+          .               double avh = top_height(dbh0, ht0, tpa0);
+          .           
+      5,600 ( 0.00%)      out_year.push_back(cycle * lp::CYCLE);
+      4,200 ( 0.00%)      out_age.push_back(age + cycle * lp::CYCLE);
+          .               out_tpa.push_back(trees);
+          .               out_ba.push_back(ba);
+     12,600 ( 0.00%)      out_qmd.push_back(std::sqrt(ba / (trees * lp::BA_FACTOR)));
+          .               out_hd.push_back(avh);
+      5,600 ( 0.00%)      if (cycle == ncycles) break;
+        657 ( 0.00%)  => /home/runner/work/_temp/Library/Rcpp/include/Rcpp/routines.h:Rcpp::Rcpp_precious_remove(SEXPREC*) (3x)
+          .           
+  1,680,858 ( 0.09%)      for (int i = 0; i < n; ++i) {
+          .                 // plot basal area in larger trees: add up every tree bigger than this one
+    478,188 ( 0.03%)        double pbal = 0.0;
+243,434,430 (13.60%)        for (int j = 0; j < n; ++j) {
+484,077,768 (27.05%)          if (dbh0[j] > dbh0[i]) pbal += lp::BA_FACTOR * dbh0[j] * dbh0[j] * tpa0[j];
+          .                 }
+  3,825,504 ( 0.21%)        dbh[i] = dbh0[i] + diameter_growth(dbh0[i], ht0[i], cr[i], avh, si, ba, pbal,
+          .                                                    slope, aspect);
+  3,825,504 ( 0.21%)        ht[i] = ht0[i] + height_growth(ht0[i], cr[i], avh, si);
+  2,869,128 ( 0.16%)        tpa[i] = tpa0[i] * (1.0 - mortality_rate(dbh0[i]));
+          .               }
+          .             }
+          .             CALLGRIND_STOP_INSTRUMENTATION;
+          .           
+          .             return DataFrame::create(_["Year"] = out_year, _["Age"] = out_age,
+          .                                      _["TPA"] = out_tpa, _["BA"] = out_ba,
+          .                                      _["QMD"] = out_qmd, _["HD"] = out_hd);
+          .           }
+-- line 142 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /home/runner/work/_temp/Library/Rcpp/include/Rcpp/vector/traits.h
+--------------------------------------------------------------------------------
+Ir                   
+
+-- line 29 ----------------------------------------
+          .           	public:
+          .           		typedef typename ::Rcpp::Vector<RTYPE, StoragePolicy> VECTOR ;
+          .           		typedef typename r_vector_iterator<RTYPE>::type iterator ;
+          .           		typedef typename r_vector_const_iterator<RTYPE>::type const_iterator ;
+          .           		typedef typename r_vector_proxy<RTYPE>::type proxy ;
+          .           		typedef typename r_vector_const_proxy<RTYPE>::type const_proxy ;
+          .           		typedef typename storage_type<RTYPE>::type storage_type ;
+          .           
+      4,200 ( 0.00%)  		r_vector_cache() : start(0), size(0) {} ;
+          .           
+          .           		inline void update( const VECTOR& v ) {
+      4,200 ( 0.00%)  			start = ::Rcpp::internal::r_vector_start<RTYPE>(v) ;
+      4,200 ( 0.00%)  			size = v.size();
+          .           		}
+          .           
+          .           		inline iterator get() const { return start; }
+          .           		inline const_iterator get_const() const { return start; }
+          .           
+          .           		inline proxy ref() { check_index(0); return start[0] ;}
+271,410,635 (15.17%)  		inline proxy ref(R_xlen_t i) { check_index(i); return start[i] ; }
+          .           
+          .           		inline proxy ref() const { check_index(0); return start[0] ;}
+  5,300,465 ( 0.30%)  		inline proxy ref(R_xlen_t i) const { check_index(i); return start[i] ; }
+          .           
+          .           	private:
+          .           
+          .           		void check_index(R_xlen_t i) const {
+          .           #ifndef RCPP_NO_BOUNDS_CHECK
+334,381,596 (18.68%)  			if (i >= size) {
+          .           				warning("subscript out of bounds (index %s >= vector size %s)", i, size); // #nocov
+          .           			}
+          .           #endif
+          .           		}
+          .           
+          .           		iterator start ;
+          .           		R_xlen_t size ;
+          .           	} ;
+-- line 65 ----------------------------------------
+
+--------------------------------------------------------------------------------
+The following files chosen for auto-annotation could not be found:
+--------------------------------------------------------------------------------
+  ./math/../sysdeps/ieee754/dbl-64/e_exp.c
+  ./math/../sysdeps/ieee754/dbl-64/e_log.c
+  ./math/../sysdeps/ieee754/dbl-64/e_pow.c
+  ./math/./w_exp_template.c
+  ./math/./w_log_template.c
+  ./math/./w_pow_template.c
+
+--------------------------------------------------------------------------------
+Ir                     
+--------------------------------------------------------------------------------
+1,424,402,588 (79.59%)  events annotated
+
