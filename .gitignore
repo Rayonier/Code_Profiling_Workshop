@@ -16,6 +16,9 @@ takeaways.html
 *.zip
 /deck/
 
+# Instructor answer key: never publish, never put in the offline bundle
+answer_key.*
+
 # Compiled Rcpp
 *.o
 *.so
