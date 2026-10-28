@@ -1,0 +1,87 @@
+---
+title: "Takeaways: Profiling R and Rcpp Code"
+output:
+  html_document:
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+# Re-measure on this machine so every number below is real, not copied.
+Rcpp::sourceCpp("src/grow.cpp")
+Rcpp::sourceCpp("src/grow_fast.cpp")
+source("R/project_stands.R")
+trees <- read.csv("data/trees.csv")
+plots <- read.csv("data/plots.csv")
+el <- function(expr) system.time(expr)[["elapsed"]]
+rows <- split(seq_len(nrow(trees)), trees$PlotID)
+grow_all <- function(grow) for (k in seq_len(nrow(plots))) {
+  i <- rows[[plots$PlotID[k]]]
+  grow(trees$Dbh[i], trees$Ht[i], trees$CR[i], trees$TPA[i], plots$Age[k], plots$SI[k], 30)
+}
+t_slow <- el(project_stands_slow(trees, plots))
+t_cpp  <- el(grow_all(grow_plot))
+t_r    <- el(project_stands_fast(trees, plots))
+t_both <- el(project_stands_fast(trees, plots, grow = grow_plot_fast))
+share  <- t_cpp / t_slow
+
+total_ir <- function(version) {
+  p <- file.path("results", sprintf("annotate_inclusive_%s.txt", version))
+  if (!file.exists(p)) return(NA_real_)
+  line <- grep("PROGRAM TOTALS", readLines(p), value = TRUE)[1]
+  as.numeric(gsub(",", "", sub("^\\s*([0-9,]+).*", "\\1", line)))
+}
+ir_ratio <- total_ir("naive") / total_ir("fast")
+f1 <- function(x) sprintf("%.1f", x)
+pct <- function(x) sprintf("%.0f%%", 100 * x)
+```
+
+- **Measure before you optimize.** Everyone "knew" the C++ was the problem.
+  On this machine it was `r pct(share)` of the run time. The rest was two
+  lines of R.
+
+- **Timing tells you *how long*; profiling tells you *where*.** Use
+  `bench::mark()` to compare small pieces (it also reports memory), and
+  `profvis` / `Rprof()` to find the pieces worth comparing.
+
+- **R's profiler stops at the C++ boundary.** An Rcpp call shows up as one
+  flat bar. To see inside it, you need a native profiler such as callgrind.
+
+- **Callgrind counts every instruction, line by line.** The counts are exact
+  and repeatable, but the program runs 20–50× slower and only on Linux, so
+  run it on a GitHub Actions runner. Compile with `-g -O2`, and use
+  start/stop markers so only the code you care about is counted.
+
+- **Inclusive vs. self cost** is the most common misreading. The top function
+  "taking 100%" says nothing about which line to fix. Look at self cost.
+
+- **A fix can only save the time its part takes** (Amdahl's law). An
+  infinitely fast C++ model would have sped the original pipeline up at
+  most `r sprintf("%.2f", 1 / (1 - share))`×. Fixing the R side gave
+  `r f1(t_slow / t_r)`× (`r f1(t_slow)` s → `r f1(t_r)` s).
+
+- **After one fix, re-measure: the biggest cost moves.** Once the R side was
+  fixed, the C++ was `r pct(t_cpp / t_r)` of the time. *Now* it was worth
+  optimizing, and the C++ fixes took it to `r f1(t_both)` s.
+  `r if (!is.na(ir_ratio)) sprintf("Callgrind measured the fixed C++ at %.1f× fewer instructions.", ir_ratio) else ""`
+
+- **Premature optimization means optimizing what you haven't measured.**
+  Optimizing the measured "critical 3%" is just good engineering.
+
+- **Where to look next:** `perf` and valgrind's `cachegrind` (cache
+  behaviour); `profmem` and the `mem_alloc` column of `bench::mark()`
+  (memory); and running a callgrind check in CI to catch performance
+  regressions automatically.
+
+<details><summary><b>Under the hood:</b> the model and the ceiling formula</summary>
+
+The growth model uses published loblolly pine equations from the US Forest
+Service's Forest Vegetation Simulator, Southern variant (FVS Staff 2008,
+revised 2026). It's a simplified teaching re-implementation, not FVS, run on
+simulated plots.
+
+Amdahl's law: speeding up a part that takes a share *p* of the time by a
+factor *s* speeds up the whole program by 1 / ((1 − *p*) + *p* / *s*). The
+ceiling, as *s* → ∞, is 1 / (1 − *p*).
+
+</details>

@@ -1,0 +1,546 @@
+---
+title: "Measure Before You Touch It: Profiling R and Rcpp Code"
+subtitle: "Hands-On Workshop (Part 2 of 2 — see the intro lecture first)"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 8, fig.height = 5)
+REPO <- "Rayonier/profiling-workshop"
+# Lines of a file from the first match of `from` to the first later match of `to`.
+code_lines <- function(file, from, to = NULL) {
+  x <- readLines(file)
+  i <- grep(from, x)[1]
+  j <- if (is.null(to)) length(x) else i - 1 + grep(to, x[i:length(x)])[1]
+  x[i:j]
+}
+```
+
+```{r palette, include=FALSE}
+library(ggplot2)
+FOREST <- "#2E6B3F"; ORANGE <- "#D9661F"; NAVY <- "#33506E"
+INK <- "#222222"; GREY <- "#B9B4AC"
+
+ACT_LABELS <- c("MEASURE", "LOCATE", "ZOOM IN", "DECIDE")
+ACT_SUB    <- c("how slow, really?", "which R call?", "which C++ line?", "what to fix first")
+story_arc <- function(highlight) {
+  n <- length(ACT_LABELS)
+  df <- data.frame(x = seq_len(n), label = ACT_LABELS, sub = ACT_SUB,
+                   is_now = seq_len(n) == highlight, done = seq_len(n) < highlight)
+  df$fill <- ifelse(df$is_now, FOREST, ifelse(df$done, NAVY, GREY))
+  arrows <- data.frame(x = head(df$x, -1) + 0.42, xend = tail(df$x, -1) - 0.42, y = 0, yend = 0)
+  ggplot() +
+    geom_segment(data = arrows, aes(x, y, xend = xend, yend = yend),
+                 arrow = arrow(length = unit(0.18, "cm"), type = "closed"), color = GREY, linewidth = 0.8) +
+    geom_tile(data = df, aes(x, 0, fill = fill), width = 0.85, height = 0.55, show.legend = FALSE) +
+    geom_text(data = df, aes(x, 0.02, label = label), color = "white", fontface = "bold", size = 5) +
+    geom_text(data = df, aes(x, -0.42, label = sub), color = INK, size = 4) +
+    scale_fill_identity() + xlim(0.4, n + 0.6) + ylim(-0.65, 0.4) +
+    theme_void() + theme(plot.background = element_rect(fill = "white", color = NA))
+}
+```
+
+> **Where we left off.** In the lecture, we met a stand-projection script
+> that grows a couple of thousand plantation plots forward 30 years and
+> builds one summary table. It's slow, and everyone already "knows" why: the
+> C++ growth model. The three ideas to carry forward:
+>
+> 1. **Your intuition about where time goes is usually wrong.** Measure first.
+> 2. **Profile at two levels:** R tells you *which call* is slow; callgrind
+>    tells you *which line inside the C++* is slow.
+> 3. **Fix the biggest measured cost first.** Optimizing anything else is
+>    premature.
+>
+> No valgrind or GitHub experience is needed: every step is given. If your
+> cloud run fails or sits in the queue, the repository's `results` branch has
+> identical pre-made output, so nothing later depends on your run. If GitHub
+> isn't reachable at all, follow the **Plan B** boxes; the offline bundle has
+> everything.
+
+```{r arc-0, echo=FALSE, fig.height=1.6}
+story_arc(1)
+```
+
+---
+
+## 1. Setup + start the callgrind run (10 min)
+
+**First, check your setup.** This chunk only *checks*; if anything is
+missing, run `source("bootstrap.R")` once in the console, then come back.
+
+```{r preflight}
+need <- c("Rcpp", "profvis", "bench", "ggplot2")
+miss <- need[!vapply(need, requireNamespace, logical(1), quietly = TRUE)]
+if (length(miss)) stop("Missing packages: ", paste(miss, collapse = ", "),
+                       ". Run source(\"bootstrap.R\") in the console, then re-run this chunk.")
+if (!file.exists("data/trees.csv"))
+  stop("data/trees.csv not found -- set the working directory to the workshop folder ",
+       "(Session > Set Working Directory > To Source File Location).")
+cat("Setup OK\n")
+```
+
+**Now start the callgrind run, before anything else.** It takes several
+minutes on GitHub's machine, so it runs while you do sections 2 and 3:
+
+1. Open **`github.com/`r REPO``** → the branch dropdown (it says `main`) →
+   type a branch name (your username) → **Create branch from main**.
+2. Go to the **Actions** tab → **Callgrind profile** → **Run workflow** →
+   choose **your branch** and `version: naive` → **Run workflow**.
+3. Leave that tab open and carry on here. You'll come back to it in section 4.
+
+> **Plan B — can't reach GitHub?** Use the offline bundle from your invite
+> email: unzip it and set it as your working directory. Skip steps 1–3. In
+> section 4 you'll read the pre-generated callgrind output in `results/`,
+> which is exactly what your run would have produced.
+
+Load the code and data:
+
+```{r load}
+Rcpp::sourceCpp("src/grow.cpp")              # grow_plot(): the C++ growth model
+source("R/project_stands.R", keep.source = TRUE)
+trees <- read.csv("data/trees.csv")
+plots <- read.csv("data/plots.csv")
+cat(sprintf("%d plots, %d trees\n", nrow(plots), nrow(trees)))
+```
+
+The whole pipeline is one short R function. It's worth reading before you
+measure it:
+
+```{r show-pipeline, eval=FALSE, code=code_lines("R/project_stands.R", "^project_stands_slow", "^[}]")}
+```
+
+<details><summary><b>Under the hood:</b> the growth model and the data</summary>
+
+`grow_plot()` (in `src/grow.cpp`) grows every tree on a plot in 5-year
+steps, using published equations for loblolly pine from the **Southern
+variant of the US Forest Service's Forest Vegetation Simulator** (FVS Staff
+2008, revised 2026, *Southern (SN) Variant Overview*). These include
+large-tree diameter growth, potential height growth from Carmean et
+al. (1989) site curves, height-growth modifiers, bark ratio and background
+mortality. The coefficients are listed in `src/fvs_sn_lp.h`, with equation
+numbers.
+
+It is a teaching re-implementation, not FVS. Crown ratio is held constant,
+and there's no density-related mortality, so basal area runs high late in
+the projection. The plots are **simulated**: tree heights come from the
+published height–diameter and site-curve equations, everything else is
+made up. None of that matters for profiling. What matters is that it's real
+arithmetic, with real costs.
+
+</details>
+
+**Q1.1** Before you measure anything, write down:
+(a) which part of `project_stands_slow()` you think takes the most time, and
+(b) roughly what share of the total it takes. We'll come back to your guess
+at the end.
+
+---
+
+## 2. Timing: is it actually slow, and how slow? (8 min)
+
+Start with a stopwatch on the whole thing:
+
+```{r time-slow}
+t_slow <- system.time(res_slow <- project_stands_slow(trees, plots))
+t_slow
+```
+
+> **Elapsed vs. user vs. system, in plain words.** *Elapsed* is wall-clock
+> time, what you waited for. *User* is time the CPU spent running your code.
+> *System* is time the operating system spent on your behalf (memory,
+> files). When they disagree a lot, something other than computation is
+> going on.
+
+One run is weak evidence. Run it again and you'll get a slightly different
+number, because other programs, the cache and memory all vary. For small
+pieces of code, `bench::mark()` runs each one many times and reports the
+spread. It also reports how much memory each one allocated.
+
+Here are three things the loop does for **one plot**: pick out that plot's
+trees, grow them, and stack the result onto an output table that already
+holds most of the other plots:
+
+```{r bench-pieces}
+id  <- plots$PlotID[1]
+pt  <- trees[trees$PlotID == id, ]
+res <- grow_plot(pt$Dbh, pt$Ht, pt$CR, pt$TPA, plots$Age[1], plots$SI[1], 30)
+big <- res_slow[seq_len(nrow(res_slow) - nrow(res)), ]   # the table near the end of the loop
+
+pieces <- bench::mark(
+  subset_trees = trees[trees$PlotID == id, ],
+  grow_cpp     = grow_plot(pt$Dbh, pt$Ht, pt$CR, pt$TPA, plots$Age[1], plots$SI[1], 30),
+  rbind_output = rbind(big, data.frame(PlotID = id, res)),
+  check = FALSE, min_iterations = 20
+)
+pieces[, c("expression", "median", "mem_alloc")]
+```
+
+Now time **just the C++**: grow every plot, with the trees already split up
+so no R table work is included.
+
+```{r time-cpp}
+rows <- split(seq_len(nrow(trees)), trees$PlotID)
+grow_all <- function(grow) {
+  for (k in seq_len(nrow(plots))) {
+    i <- rows[[plots$PlotID[k]]]
+    grow(trees$Dbh[i], trees$Ht[i], trees$CR[i], trees$TPA[i], plots$Age[k], plots$SI[k], 30)
+  }
+}
+t_cpp <- system.time(grow_all(grow_plot))
+t_cpp
+cpp_share <- t_cpp[["elapsed"]] / t_slow[["elapsed"]]
+```
+
+On this machine, the C++ growth model is **`r sprintf("%.0f%%", 100 * cpp_share)`**
+of the pipeline's `r sprintf("%.1f", t_slow[["elapsed"]])` seconds.
+
+**Q2.1** Run the `time-slow` chunk three times. How much does the elapsed
+time vary? How big would a speedup have to be before you'd believe it from
+one run of each version?
+
+**Q2.2** Multiply each median in the `bench-pieces` table by the number of
+plots (`r nrow(plots)`). Which piece adds up to the most? Does that match
+your answer to Q1.1? Then look at `mem_alloc`: why would picking out about
+200 trees allocate megabytes? *(Careful: `rbind_output` was measured near
+the end of the loop, when the table is biggest. Early in the loop it's
+cheap. Why?)*
+
+---
+
+## 3. Profiling from R (17 min)
+
+```{r arc-3, echo=FALSE, fig.height=1.6}
+story_arc(2)
+```
+
+Timing pieces one at a time only works when you already know which pieces
+to time. A **profiler** finds them for you. R's built-in profiler is a
+*sampling* profiler: every 20 ms it notes which function calls are running,
+and at the end it counts how often each one showed up.
+
+<details><summary><b>Under the hood:</b> sampling profilers</summary>
+
+A function that shows up in 30% of the samples took about 30% of the time.
+Sampling is cheap, so the program runs at nearly normal speed. But it's
+statistical: anything much shorter than the sampling interval can be missed
+entirely, and short runs give noisy profiles. To see *lines* rather than
+just functions, R needs the source references that `keep.source = TRUE`
+keeps (we used it in `source()` above).
+
+</details>
+
+### Base R: `Rprof()`
+
+```{r rprof}
+prof_file <- tempfile()
+Rprof(prof_file, interval = 0.02, line.profiling = TRUE)
+invisible(project_stands_slow(trees, plots))
+Rprof(NULL)
+prof <- summaryRprof(prof_file, lines = "show")
+head(prof$by.self, 8)
+```
+
+Each row is one line of code: `project_stands.R#12` means line 12 of
+`R/project_stands.R` (`file.show("R/project_stands.R")` to look). `self.pct`
+is the share of all samples taken while that line was running. R's internal
+helpers, like `[.data.frame` for subsetting, are counted against the line
+that called them.
+
+### Interactive: `profvis`
+
+`profvis` runs the same profiler and draws the result. The **flame graph**
+shows time left to right and the call stack bottom to top. A wide bar means
+lots of time. Hover over a bar to see its line of code; click
+**Data** for a table.
+
+```{r profvis, fig.height=6}
+profvis::profvis(project_stands_slow(trees, plots), height = "500px")
+```
+
+Look for `grow_plot` in the flame graph. It's one flat bar with nothing on
+top. R can see that the C++ function was running, but not what it was doing
+inside. That's the job of section 4.
+
+**Q3.1** Which *line* of `project_stands_slow()` accounts for the most time?
+Which accounts for the second most? Is either one the C++ call?
+
+**Q3.2** The `rbind()` line looks harmless. Why does its total cost grow
+*faster* than the number of plots? *(Hint: each time round the loop, what
+does R have to copy to make the new, one-plot-longer table?)*
+
+**Stretch (only if you're ahead).** Profile `project_stands_slow()` on the
+first half of the plots (`plots[1:1000, ]`) and compare it with the full
+run. Which bar roughly doubles, and which grows by more than that?
+
+---
+
+## 4. Inside the C++: callgrind on a Linux runner (20 min)
+
+```{r arc-4, echo=FALSE, fig.height=1.6}
+story_arc(3)
+```
+
+R's profiler stops at the C++ boundary. **Callgrind** (part of valgrind)
+goes inside. It runs the program on a simulated processor and counts every
+instruction each line executes. The counts are exact and come out the same
+on every run, but the program runs 20–50× slower, and valgrind only runs on
+Linux. That's why it runs on a GitHub Actions Linux machine.
+
+### What the workflow did
+
+Your run from section 1 should be finished by now. Open it from the
+**Actions** tab. The top of the report is on the run's summary page, and the
+full files are under **Artifacts** at the bottom. Here's what it ran, one
+step at a time:
+
+```{r show-workflow, echo=FALSE, results='asis'}
+cat("```yaml", code_lines(".github/workflows/callgrind.yml", "^jobs:"), "```", sep = "\n")
+```
+
+In plain words:
+
+- **Set up R and install valgrind.** This gives a clean Linux machine with
+  R, Rcpp and valgrind.
+- **Compile with debug symbols.** `ci/Makevars` adds `-g` so callgrind can
+  match instructions to source lines. It keeps `-O2` so the code is as
+  optimized as a normal build.
+- **Run under callgrind.** It runs `ci/profile_cpp.R`, which grows the first
+  200 plots. `--instr-atstart=no` plus the `CALLGRIND_START/STOP_INSTRUMENTATION`
+  markers in `grow.cpp` mean that only the growth loop is counted. R's own
+  startup, the compiler and reading the CSV are left out.
+- **Annotate.** `callgrind_annotate` turns the raw counts into two readable
+  reports: per function (`annotate_inclusive_naive.txt`) and per source line
+  (`annotate_naive.txt`).
+
+> **Your run failed or is still queued?** Switch to the `results` branch on
+> GitHub and open `results/annotate_naive.txt` there, or run
+> `git fetch && git checkout origin/results -- results/`. It's identical
+> output.
+>
+> **Plan B — offline?** Your `results/` folder already has everything. Read
+> `.github/workflows/callgrind.yml` alongside the walkthrough above; it's what
+> would have run.
+
+### Reading the report
+
+The unit is **Ir**, *instructions read* (executed). Two views matter:
+
+- **Inclusive** cost: the instructions in a function *plus everything it
+  calls*. `grow_plot` has almost 100% inclusive cost, because everything
+  happens inside it.
+- **Self** cost: the instructions in the function's own lines only. This is
+  where the work actually happens.
+
+```{r callgrind-helpers, include=FALSE}
+annot_path <- function(version, kind = c("inclusive", "source")) {
+  kind <- match.arg(kind)
+  file.path("results", sprintf(if (kind == "inclusive") "annotate_inclusive_%s.txt"
+                               else "annotate_%s.txt", version))
+}
+has_results <- file.exists(annot_path("naive"))
+total_ir <- function(version) {
+  p <- annot_path(version)
+  if (!file.exists(p)) return(NA_real_)
+  line <- grep("PROGRAM TOTALS", readLines(p), value = TRUE)[1]
+  as.numeric(gsub(",", "", sub("^\\s*([0-9,]+).*", "\\1", line)))
+}
+```
+
+```{r callgrind-top, echo=FALSE, results='asis'}
+if (has_results) {
+  cat("Top of the inclusive report for the naive version:\n\n```\n")
+  cat(head(readLines(annot_path("naive")), 40), sep = "\n")
+  cat("\n```\n")
+} else {
+  cat("> **Results pending.** This page was built before the first callgrind run,",
+      "so there's no report to show yet. Use the report from your own run",
+      "(Actions tab) or from the `results` branch.\n")
+}
+```
+
+And here is the part of the line-by-line report that covers the main loop in
+`grow.cpp`. Each line shows its instruction count to the left of the code:
+
+```{r callgrind-lines, echo=FALSE, results='asis'}
+if (has_results) {
+  src <- readLines(annot_path("naive", "source"))
+  hit <- grep("plot basal area in larger trees", src, fixed = TRUE)
+  if (length(hit)) {
+    cat("```\n"); cat(src[max(1, hit[1] - 6):min(length(src), hit[1] + 14)], sep = "\n"); cat("\n```\n")
+  } else {
+    cat("> Open `results/annotate_naive.txt` and search for `grow.cpp`.\n")
+  }
+} else {
+  cat("> **Results pending** (see above).\n")
+}
+```
+
+**Q4.1** Which function has the highest *inclusive* cost, and which has the
+highest *self* cost? Why are they different?
+
+**Q4.2** Find the line in `grow.cpp` with the most instructions. What is it
+doing, and how many times does it run per cycle for a plot with *n* trees?
+Could you get the same numbers without doing that? *(Hint: the trees are
+already sorted by diameter once per cycle for `top_height()`.)*
+
+**Q4.3** Look further down the list. Find:
+(a) a calculation that gives the same answer for every tree on a plot, but
+runs once per tree; and
+(b) something that copies the tree data every cycle.
+
+**Q4.4** Callgrind counts instructions, not seconds. Name something that
+makes code slow that an instruction count would *miss*. *(Stretch: look up
+`--cache-sim=yes`.)*
+
+**Stretch (only if you're ahead).** On **your branch**, fix one of the issues
+in `src/grow.cpp`, either in GitHub's web editor (the pencil icon) or by
+pushing from your machine. The push starts a new run automatically. Compare
+your total Ir with `results/annotate_fast.txt`.
+*Plan B version:* compare `results/annotate_naive.txt` and
+`results/annotate_fast.txt` side by side. Which lines lost the most
+instructions?
+
+---
+
+## 5. Reading the results side by side (12 min)
+
+You now have two profiles that answer different questions:
+
+| | R profiler (`profvis`) | callgrind |
+|---|---|---|
+| Measures | share of **wall time** | share of **instructions** |
+| Sees | R calls and lines | C++ functions and lines |
+| Inside C++? | no: one opaque bar | yes |
+| Run to run | varies a little | identical |
+
+They fit together like this. R's profile says how big the C++ box is, and
+callgrind says what's inside the box. That makes it possible to work out
+the best case for any fix *before* making it:
+
+> **The ceiling on any speedup.** If a part takes a share *p* of the total
+> time and you make it *s* times faster, the whole program gets
+> 1 / ((1 − p) + p / s) times faster. Even if you make that part *infinitely*
+> fast, you can't beat 1 / (1 − p).
+
+<details><summary><b>Under the hood:</b> Amdahl's law</summary>
+
+Call the original run time 1. The part you speed up takes *p* and the rest
+takes 1 − *p*. After the fix, the part takes *p* / *s*, so the new total is
+(1 − *p*) + *p* / *s*. Speedup is old time over new time. This is
+**Amdahl's law** (1967). It's the reason the *size* of a cost matters more
+than how ugly the code looks.
+
+</details>
+
+With this machine's numbers: the C++ is
+`r sprintf("%.0f%%", 100 * cpp_share)` of the pipeline, so even an infinitely
+fast `grow_plot()` gives at most a
+**`r sprintf("%.2f", 1 / (1 - cpp_share))`×** speedup.
+
+**Common ways to misread a profile:**
+
+- Reading *inclusive* cost as if it were *self* cost. `grow_plot` "takes
+  100%", but that tells you nothing about which line to fix.
+- Trusting a single timing run (Q2.1).
+- Profiling a toy input. With 10 plots instead of 2,000, the `rbind()`
+  problem nearly disappears, because its cost grows with the square of the
+  number of plots.
+- Treating instructions as time. A `pow()` call and an addition are both
+  "instructions" to read, but not equally slow (Q4.4).
+
+**Q5.1** Using your numbers from sections 2 and 3: if `grow_plot()` were
+infinitely fast, what's the most the whole pipeline could speed up?
+
+**Q5.2** Same question, but for the two R lines you found in Q3.1 together.
+
+---
+
+## 6. Capstone — Decide: what do you fix first? (13 min)
+
+```{r arc-6, echo=FALSE, fig.height=1.6}
+story_arc(4)
+```
+
+Look back at your guess in Q1.1. Here are the measurements.
+
+**Fix the biggest measured cost first: the R side.** `project_stands_fast()`
+makes two small changes. It splits the tree table *once* instead of scanning
+all `r format(nrow(trees), big.mark = ",")` rows for every plot, and it
+collects results in a list and binds them *once* at the end:
+
+```{r show-fast, eval=FALSE, code=code_lines("R/project_stands.R", "^project_stands_fast", "^[}]")}
+```
+
+```{r time-fast-r}
+t_fast_r <- system.time(res_fast_r <- project_stands_fast(trees, plots))
+t_fast_r
+all.equal(res_slow, res_fast_r)       # same answer
+cpp_share_now <- t_cpp[["elapsed"]] / t_fast_r[["elapsed"]]
+```
+
+From `r sprintf("%.1f", t_slow[["elapsed"]])` s to
+`r sprintf("%.1f", t_fast_r[["elapsed"]])` s, a
+**`r sprintf("%.1f", t_slow[["elapsed"]] / t_fast_r[["elapsed"]])`×**
+speedup from changing a few lines of R. The C++ didn't change at all, but
+now it's **`r sprintf("%.0f%%", 100 * cpp_share_now)`** of the time.
+
+**Now the C++ is worth optimizing.** This is the other half of Knuth's
+sentence: *"…yet we should not pass up our opportunities in that critical
+3%."* The profile now points at the C++, and callgrind has already told us
+exactly where to look. `src/grow_fast.cpp` uses the same published
+equations with the problems from Q4.2 and Q4.3 fixed:
+
+```{r time-fast-cpp}
+Rcpp::sourceCpp("src/grow_fast.cpp")         # grow_plot_fast(): same inputs, same output
+t_both <- system.time(res_both <- project_stands_fast(trees, plots, grow = grow_plot_fast))
+t_both
+all.equal(res_fast_r, res_both, tolerance = 1e-10)
+```
+
+```{r capstone-chart, echo=FALSE, fig.height=3.2}
+tt <- data.frame(
+  version = factor(c("Original", "R fixed", "R + C++ fixed"),
+                   levels = rev(c("Original", "R fixed", "R + C++ fixed"))),
+  cpp = c(t_cpp[["elapsed"]], t_cpp[["elapsed"]],
+          t_both[["elapsed"]] - (t_fast_r[["elapsed"]] - t_cpp[["elapsed"]])),
+  total = c(t_slow[["elapsed"]], t_fast_r[["elapsed"]], t_both[["elapsed"]])
+)
+tt$r <- tt$total - tt$cpp
+long <- rbind(data.frame(version = tt$version, part = "R side", sec = tt$r),
+              data.frame(version = tt$version, part = "C++ growth model", sec = tt$cpp))
+ggplot(long, aes(sec, version, fill = part)) +
+  geom_col(width = 0.6) +
+  scale_fill_manual(values = c("R side" = NAVY, "C++ growth model" = ORANGE)) +
+  labs(x = "Elapsed seconds", y = NULL, fill = NULL,
+       title = "Where the time went, before and after each fix") +
+  theme_minimal(base_size = 13) + theme(legend.position = "top")
+```
+
+**Q6.1** What was the speedup from the R fix alone, and from the C++ fix
+applied after it? What would the C++ fix *alone* have bought, applied to the
+original pipeline? (Use Amdahl's law with your section-2 numbers.)
+
+**Q6.2 (discussion)** A colleague says: *"I rewrote the whole thing in C++
+and it's 2× faster."* What do you ask before agreeing it was the right move?
+
+**Q6.3 (discussion)** When *is* it reasonable to optimize before profiling?
+
+---
+
+## Wrap-up
+
+```{r arc-wrap, echo=FALSE, fig.height=1.6}
+story_arc(4)
+```
+
+Start to finish: everyone knew the C++ was the problem. The stopwatch said
+otherwise, R's profiler pointed at two lines of R, and fixing them gave the
+biggest win. Only then was the C++ the biggest cost, and callgrind showed
+exactly which lines to fix. Four steps, one rule every time: **measure, then
+fix the biggest measured cost.** See `takeaways.html` for the one-page
+version.
