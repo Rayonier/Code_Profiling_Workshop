@@ -1,0 +1,27 @@
+# Authoring notes -- local only, never publish
+/WORKSHOP_FORMAT.md
+/WORKSHOP_OUTLINE.md
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*_cache/
+*_files/
+
+# Knitted output + slides: distributed via share/email, not the public repo
+workshop.html
+takeaways.html
+*.pptx
+*.zip
+
+# Compiled Rcpp
+*.o
+*.so
+*.dll
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
