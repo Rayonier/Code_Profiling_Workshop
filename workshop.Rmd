@@ -11,7 +11,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 8, fig.height = 5)
-REPO <- "Rayonier/profiling-workshop"
+REPO <- "Rayonier/Code_Profiling_Workshop"
 # Lines of a file from the first match of `from` to the first later match of `to`.
 code_lines <- function(file, from, to = NULL) {
   x <- readLines(file)

@@ -15,7 +15,7 @@ It installs any missing packages (Rcpp, profvis, bench, rmarkdown, knitr,
 ggplot2, pkgbuild) and checks that C++ compiles. On Windows that needs
 Rtools: https://cran.r-project.org/bin/windows/Rtools/
 
-Before the session: make sure you can open Rayonier/profiling-workshop,
+Before the session: make sure you can open Rayonier/Code_Profiling_Workshop,
 create a branch there, and see its Actions tab. In section 1 you'll create
 your own branch off main and run the "Callgrind profile" workflow on it.
 Please don't push to main or results.
