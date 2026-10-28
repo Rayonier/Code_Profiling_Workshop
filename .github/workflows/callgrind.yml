@@ -56,7 +56,7 @@ jobs:
         run: |
           callgrind_annotate --inclusive=yes callgrind.out.${CPP_VERSION} \
             > annotate_inclusive_${CPP_VERSION}.txt
-          callgrind_annotate --auto=yes -I src callgrind.out.${CPP_VERSION} \
+          callgrind_annotate --auto=yes --include=src callgrind.out.${CPP_VERSION} \
             > annotate_${CPP_VERSION}.txt
           {
             echo "## Callgrind: ${CPP_VERSION} (top of the inclusive report)"
