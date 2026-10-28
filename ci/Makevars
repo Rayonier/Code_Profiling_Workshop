@@ -1,0 +1,8 @@
+# Used only on the Linux runner (copied to ~/.R/Makevars by the workflow).
+# -g: debug info, so callgrind can attribute costs to source lines.
+# -O2: optimized, like real builds. USE_CALLGRIND turns on the start/stop markers.
+CXXFLAGS   = -g -O2 -DUSE_CALLGRIND
+CXX11FLAGS = -g -O2 -DUSE_CALLGRIND
+CXX14FLAGS = -g -O2 -DUSE_CALLGRIND
+CXX17FLAGS = -g -O2 -DUSE_CALLGRIND
+CXX20FLAGS = -g -O2 -DUSE_CALLGRIND

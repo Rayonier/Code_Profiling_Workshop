@@ -1,0 +1,75 @@
+# Profiles the C++ growth model (src/grow.cpp or src/grow_fast.cpp) with
+# valgrind's callgrind on a Linux runner. Runs when you push changes to your
+# own branch, or from the Actions tab with "Run workflow".
+name: Callgrind profile
+
+on:
+  push:
+    branches-ignore: [main, results]
+    paths: ["src/**", "ci/**", "data/**", ".github/workflows/callgrind.yml"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Which C++ version to profile"
+        type: choice
+        options: [naive, fast]
+        default: naive
+
+# A newer push to the same branch cancels the older run.
+concurrency:
+  group: callgrind-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  CPP_VERSION: ${{ inputs.version || 'naive' }}   # push events have no inputs
+
+jobs:
+  callgrind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: any::Rcpp
+
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Compile with debug symbols
+        run: |
+          mkdir -p ~/.R
+          cp ci/Makevars ~/.R/Makevars
+
+      - name: Run under callgrind
+        run: |
+          R -d "valgrind --tool=callgrind --instr-atstart=no \
+                --callgrind-out-file=callgrind.out.${CPP_VERSION}" \
+            --vanilla -f ci/profile_cpp.R
+
+      - name: Annotate
+        run: |
+          callgrind_annotate --inclusive=yes callgrind.out.${CPP_VERSION} \
+            > annotate_inclusive_${CPP_VERSION}.txt
+          callgrind_annotate --auto=yes -I src callgrind.out.${CPP_VERSION} \
+            > annotate_${CPP_VERSION}.txt
+          {
+            echo "## Callgrind: ${CPP_VERSION} (top of the inclusive report)"
+            echo '```'
+            head -40 annotate_inclusive_${CPP_VERSION}.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # artifact names can't contain "/", which branch names may
+          echo "ARTIFACT=callgrind-${GITHUB_REF_NAME//\//-}-${CPP_VERSION}" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: |
+            callgrind.out.*
+            annotate_*.txt
