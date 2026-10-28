@@ -54,6 +54,10 @@ jobs:
 
       - name: Annotate
         run: |
+          # sourceCpp compiles a copy of the .cpp in R's temp dir, which is gone
+          # by now; point callgrind back at the originals in src/
+          sed -i -E 's#/tmp/Rtmp[^/]+/sourceCpp-[^/]+/sourcecpp_[^/]+/#src/#g' \
+            callgrind.out.${CPP_VERSION}
           callgrind_annotate --inclusive=yes callgrind.out.${CPP_VERSION} \
             > annotate_inclusive_${CPP_VERSION}.txt
           callgrind_annotate --auto=yes --include=src callgrind.out.${CPP_VERSION} \
